@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ExperimentTabs } from "./ExperimentTabs";
 
 export const metadata: Metadata = {
   title: "Stockit Demand Forecast Lab",
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
 
 const sections = [
   ["01", "프로젝트 개요", "overview"], ["02", "데이터 구성", "data"],
-  ["03", "실험 설계", "design"], ["04", "Baseline", "baseline"],
+  ["02A", "단계별 계획", "roadmap"], ["03", "실험 설계", "design"], ["04", "Baseline", "baseline"],
   ["05", "AutoML 실험", "automl"], ["06", "LightGBM 실험", "lightgbm"],
   ["07", "XGBoost 실험", "xgboost"], ["08", "모델 비교", "models"],
   ["09", "최종 Test", "test"], ["10", "운영 적용", "production"],
@@ -61,6 +62,11 @@ export default function Home() {
               <p className="lead">Stockit Demand Forecast Lab은 모델 점수만 기록하지 않습니다. 데이터 분할, 누수 방지, 실험 비용과 실패까지 남겨 실제 운영에 쓸 수 있는 90일 수요예측 파이프라인을 설계합니다.</p>
               <dl className="spec-list"><div><dt>Grain</dt><dd>sku_id × sales_point_id × day</dd></div><div><dt>Target</dt><dd>net_sales_qty</dd></div><div><dt>Time</dt><dd>sales_date</dd></div><div><dt>Objective</dt><dd>90-day daily demand</dd></div></dl>
             </div>
+          </section>
+
+          <section className="lab-section roadmap-section" id="roadmap" aria-labelledby="roadmap-title">
+            <header className="section-head"><span>EXPERIMENT ROADMAP</span><h2 id="roadmap-title">E0에서 EN까지.</h2><p>탭을 선택하면 단계별 실행 내용, 결과, 판단과 사용 Feature를 확인할 수 있습니다.</p></header>
+            <ExperimentTabs />
           </section>
 
           <section className="lab-section" id="data" aria-labelledby="data-title">
