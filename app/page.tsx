@@ -41,9 +41,9 @@ export default function Home() {
         <div className="hero-grid">
           <div><h1>Stockit 수요예측<br /><em>실험 보고서</em></h1><p className="hero-description">SKU·판매지점별 향후 90일 판매량을 예측하기 위한 모델 개발 및 검증 결과를 공유합니다.</p></div>
           <div className="status-summary" aria-label="현재 실험 상태">
-            <div><span>현재 진행 단계</span><strong>공식 MA Baseline 및 E1 상시 0 정책 평가 완료</strong></div>
-            <div><span>현재 비교 상태</span><strong>E0 기준 모델 · E1-L 후보 검토</strong></div>
-            <div><span>다음 작업</span><strong>LightGBM Calendar/Lag/Rolling ablation</strong></div>
+            <div><span>현재 진행 단계</span><strong>LightGBM Feature ablation 완료</strong></div>
+            <div><span>현재 비교 상태</span><strong>LGBM-2 Lag+Rolling Validation 후보 선정</strong></div>
+            <div><span>다음 작업</span><strong>최종 Test 90일 1회 평가 · 제출 전</strong></div>
             <div><span>E1-L Custom Macro NRMSE</span><strong>0.255497 · 계산 기준 주의</strong></div>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function Home() {
           </section>
 
           <section className="lab-section roadmap-section" id="roadmap" aria-labelledby="roadmap-title">
-            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>E0 AutoML, 공식 이동평균 Baseline과 E1 LightGBM 상시 0 정책 평가를 완료했습니다. 다음으로 Feature ablation을 검증한 뒤 Validation 후보 하나를 선정합니다.</p></header>
+            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>E0 AutoML, 공식 이동평균 Baseline과 LightGBM Feature ablation을 완료했습니다. Lag+Rolling 구성을 Validation 후보로 고정했으며, 다음 단계는 Test 90일을 단 한 번 평가하는 것입니다.</p></header>
             <ExperimentTabs />
           </section>
 
@@ -107,8 +107,10 @@ export default function Home() {
           </section>
 
           <section className="lab-section model-plan" id="lightgbm" aria-labelledby="lgbm-title">
-            <header className="section-head"><span>LightGBM · 완료 · 후보 검토</span><h2 id="lgbm-title">E1 LightGBM Lag/Rolling v2 결과</h2><p>누수 방지 Lag/Rolling Feature를 사용한 LightGBM을 90일 고정 Forecast Origin 방식으로 평가했습니다. Test는 사용하지 않았고 모델 등록·배포도 진행하지 않았습니다.</p><i className="planned done">완료</i></header>
+            <header className="section-head"><span>LightGBM · Ablation 완료 · 후보 선정</span><h2 id="lgbm-title">E1 LightGBM Feature 검증 결과</h2><p>동일한 데이터·파라미터·재귀 검증 조건에서 Calendar, Lag, Rolling Feature의 기여도를 분리해 확인했습니다. Test는 사용하지 않았고 모델 등록·배포도 진행하지 않았습니다.</p><i className="planned done">후보 선정</i></header>
             <div className="run-summary"><div><span>Azure Job ID</span><strong>tough_ship_2n7nk8qrwz</strong></div><div><span>Train</span><strong>stockit-demand-e0-train:3 · 8,497,732행</strong></div><div><span>Validation</span><strong>stockit-demand-e0-validation:2 · 834,930행</strong></div><div><span>시계열</span><strong>9,277개</strong></div></div>
+            <div className="table-wrap ablation-table"><table><thead><tr><th>Variant</th><th>Feature set</th><th>Azure Job</th><th>MAE</th><th>RMSE</th><th>R²</th><th>Macro NRMSE</th></tr></thead><tbody><tr><td>LGBM-0</td><td>ID + Calendar</td><td>honest_morning_6l1x2bh51l</td><td>1.386455</td><td>2.225179</td><td>0.589199</td><td>0.268132</td></tr><tr><td>LGBM-1</td><td>ID + Calendar + Lag</td><td>brave_boniato_8dtnqwprbq</td><td>1.274493</td><td>2.083455</td><td>0.639862</td><td>0.261626</td></tr><tr className="review"><td><b>LGBM-2</b></td><td><b>ID + Calendar + Lag + Rolling</b></td><td>tough_ship_2n7nk8qrwz</td><td><b>1.215846</b></td><td><b>2.044311</b></td><td><b>0.653267</b></td><td><b>0.255497</b></td></tr></tbody></table></div>
+            <div className="ablation-conclusion"><span>Feature 기여도</span><p>Lag 추가 시 Calendar-only 대비 MAE 8.08%, RMSE 6.37%가 개선됐습니다. Rolling 추가 시 Lag-only 대비 MAE 4.60%, RMSE 1.88%가 다시 개선되어 LGBM-2를 Validation 후보로 선정했습니다.</p></div>
             <div className="table-wrap lgbm-comparison"><table><thead><tr><th>Validation 지표</th><th>E0 VotingEnsemble</th><th>E1-L 상시 0 정책</th><th>E0 대비 변화</th></tr></thead><tbody><tr><td>MAE</td><td>1.328700</td><td><b>1.215846</b></td><td className="improved">8.49% 개선</td></tr><tr><td>RMSE</td><td>2.093300</td><td><b>2.044311</b></td><td className="improved">2.34% 개선</td></tr><tr><td>R²</td><td>0.635690</td><td><b>0.653267</b></td><td className="improved">+0.017577</td></tr><tr><td>Macro NRMSE</td><td>0.248920</td><td>0.255497*</td><td>계산 정의 상이</td></tr></tbody></table></div>
             <div className="metric-caution"><b>* 지표 비교 주의</b><p>E0 NRMSE 0.248920은 Azure AutoML 계산이고 E1-L 0.255497은 constant-range 시계열에 unit denominator를 사용하는 custom evaluator 결과입니다. 완전히 동일한 구현이 아니므로 방향성 참고로만 사용합니다.</p></div>
             <div className="lgbm-detail-grid">
@@ -119,19 +121,19 @@ export default function Home() {
           </section>
 
           <section className="lab-section model-plan muted" id="xgboost" aria-labelledby="xgb-title">
-            <header className="section-head"><span>XGBoost · 대기</span><h2 id="xgb-title">XGBoost 비교 실험</h2><p>현재 우선순위는 MA Baseline, 상시 0 규칙과 LightGBM ablation입니다. 해당 검증 후 필요할 경우 최적 Feature 조합을 XGBoost에 동일하게 적용합니다.</p><i className="planned">대기</i></header>
-            <div className="model-layout"><div className="lead small-lead">현재 실행 결과는 없습니다. Validation 후보 선정에 추가 비교가 필요할 때 조건부로 진행합니다.</div><div className="recipe"><h3>실행 조건</h3><p><span>01</span>공식 MA Baseline 평가 완료</p><p><span>02</span>LightGBM ablation 및 최적 조합 선정</p><p><span>03</span>동일한 데이터 분할과 평가 기준 적용</p></div></div>
+            <header className="section-head"><span>XGBoost · 보류</span><h2 id="xgb-title">XGBoost 비교 실험</h2><p>LightGBM ablation에서 Feature 효과와 Validation 후보가 명확해졌으므로 현재는 XGBoost를 추가 실행하지 않습니다. 별도 비교 필요성이 생길 때만 동일 Feature와 평가 기준으로 한 번 수행합니다.</p><i className="planned">조건부 보류</i></header>
+            <div className="model-layout"><div className="lead small-lead">현재 실행 결과는 없습니다. Test 이전의 추가 튜닝 범위를 넓히지 않고 선정된 LGBM-2 구성을 고정합니다.</div><div className="recipe"><h3>현재 판단</h3><p><span>01</span>공식 MA Baseline 평가 완료</p><p><span>02</span>LightGBM ablation 및 후보 선정 완료</p><p><span>03</span>XGBoost 추가 학습은 필요 시 별도 실험</p></div></div>
           </section>
 
           <section className="lab-section" id="models" aria-labelledby="models-title">
             <header className="section-head"><span>모델 비교</span><h2 id="models-title">모델 성능 비교</h2></header>
-            <div className="table-wrap"><table><thead><tr><th>MODEL</th><th>상태</th><th>MAE</th><th>RMSE</th><th>R²</th><th>Macro NRMSE ↓</th></tr></thead><tbody><tr className="current"><td>E0 · VotingEnsemble</td><td><b>기준 모델</b></td><td>1.328700</td><td>2.093300</td><td>0.635690</td><td>0.248920*</td></tr><tr><td>E1-C · Calendar AutoML</td><td>후보 제외</td><td>1.328700</td><td>2.093300</td><td>0.635690</td><td>0.248920*</td></tr><tr><td>B0 · MA(7)</td><td>평가 완료</td><td>1.401764</td><td>2.250167</td><td>0.579921</td><td>0.271146</td></tr><tr><td>B0 · MA(14)</td><td>평가 완료</td><td>1.328307</td><td>2.150143</td><td>0.616438</td><td>0.260025</td></tr><tr><td>B0 · MA(30)</td><td>최강 MA 기준선</td><td>1.293393</td><td>2.100677</td><td>0.633883</td><td>0.254418</td></tr><tr className="review"><td>E1-L · LightGBM 상시 0 정책</td><td><b>후보 검토</b></td><td>1.215846</td><td>2.044311</td><td>0.653267</td><td>0.255497*</td></tr><tr><td>A1 · LightGBM ablation</td><td>다음 작업</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>XGBoost</td><td>대기</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
-            <div className="evaluation"><h3>평가 기준</h3><ul><li><b>행 단위 지표</b> MAE, RMSE, R²</li><li><b>시계열 균형 지표</b> Macro NRMSE</li><li>지표 계산 정의 일치 여부</li><li>항상 0인 38개 시계열 성능</li><li>음수 예측 발생률</li><li>D+7, D+14, D+30, D+60, D+90 누적 오차</li></ul><p>* E0는 Azure AutoML 계산, E1-L은 constant-range 시계열에 unit denominator를 사용하는 custom 계산입니다. 아직 Validation 후보는 확정하지 않았습니다.</p></div>
+            <div className="table-wrap"><table><thead><tr><th>MODEL</th><th>상태</th><th>MAE</th><th>RMSE</th><th>R²</th><th>Macro NRMSE ↓</th></tr></thead><tbody><tr className="current"><td>E0 · VotingEnsemble</td><td><b>기준 모델</b></td><td>1.328700</td><td>2.093300</td><td>0.635690</td><td>0.248920*</td></tr><tr><td>E1-C · Calendar AutoML</td><td>후보 제외</td><td>1.328700</td><td>2.093300</td><td>0.635690</td><td>0.248920*</td></tr><tr><td>B0 · MA(7)</td><td>평가 완료</td><td>1.401764</td><td>2.250167</td><td>0.579921</td><td>0.271146</td></tr><tr><td>B0 · MA(14)</td><td>평가 완료</td><td>1.328307</td><td>2.150143</td><td>0.616438</td><td>0.260025</td></tr><tr><td>B0 · MA(30)</td><td>최강 MA 기준선</td><td>1.293393</td><td>2.100677</td><td>0.633883</td><td>0.254418</td></tr><tr><td>LGBM-0 · Calendar-only</td><td>ablation 완료</td><td>1.386455</td><td>2.225179</td><td>0.589199</td><td>0.268132</td></tr><tr><td>LGBM-1 · Calendar + Lag</td><td>ablation 완료</td><td>1.274493</td><td>2.083455</td><td>0.639862</td><td>0.261626</td></tr><tr className="review"><td>LGBM-2 · Lag + Rolling</td><td><b>Validation 후보</b></td><td>1.215846</td><td>2.044311</td><td>0.653267</td><td>0.255497*</td></tr><tr><td>XGBoost</td><td>조건부 보류</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
+            <div className="evaluation"><h3>평가 기준</h3><ul><li><b>행 단위 지표</b> MAE, RMSE, R²</li><li><b>시계열 균형 지표</b> Macro NRMSE</li><li>지표 계산 정의 일치 여부</li><li>항상 0인 38개 시계열 성능</li><li>음수 예측 발생률</li><li>D+7, D+14, D+30, D+60, D+90 누적 오차</li></ul><p>* E0는 Azure AutoML 계산, LGBM은 constant-range 시계열에 unit denominator를 사용하는 custom 계산입니다. NRMSE의 직접 비교에는 주의가 필요하지만, 동일 custom evaluator를 사용한 LightGBM 세 변형에서는 LGBM-2가 가장 우수했습니다.</p></div>
           </section>
 
           <section className="lab-section" id="test" aria-labelledby="test-title">
-            <header className="section-head"><span>최종 Test · 미평가</span><h2 id="test-title">최종 Test 평가 계획</h2><p>현재 E1-L 실험까지 Test는 사용하지 않았습니다. 공식 Baseline, 상시 0 규칙과 ablation 결과로 Validation 후보 하나를 선정한 후, 2026.05.03~2026.07.31 구간을 한 번만 평가합니다.</p></header>
-            <div className="test-lock"><span>Test 평가 구간</span><strong>2026.05.03 — 2026.07.31</strong><p>Validation 기준으로 최종 후보 1개를 선정하기 전까지 평가에 사용하지 않습니다.</p><i>최종 후보 선정 전 사용 금지</i></div>
+            <header className="section-head"><span>최종 Test · 실행 준비 완료 · 미평가</span><h2 id="test-title">최종 Test 평가 계획</h2><p>LGBM-2 구성을 Validation 후보로 고정했습니다. 전용 실행 구성은 준비됐지만 Azure Job은 아직 제출하지 않았으며, 2026.05.03~2026.07.31 Test 구간도 아직 사용하지 않았습니다.</p></header>
+            <div className="test-lock"><span>Test 평가 구간</span><strong>2026.05.03 — 2026.07.31</strong><p>Train v3와 Validation v2로 재학습한 뒤 Test v4를 90일 재귀 방식으로 한 번만 평가합니다. Test 결과에 따라 Feature나 파라미터를 다시 조정하지 않습니다.</p><i>비용 승인 후 1회 제출</i></div>
           </section>
 
           <section className="lab-section" id="production" aria-labelledby="production-title">
