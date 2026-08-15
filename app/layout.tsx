@@ -13,8 +13,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stockit Demand Forecast Lab",
-  description: "Stockit 90일 수요예측 실험 기록과 모델 비교",
+  metadataBase: new URL("https://stockit-demand-forecast-lab.dnwls0723.chatgpt.site"),
+  title: "Stockit 수요예측 실험 보고서",
+  description: "SKU·판매지점별 향후 90일 판매량 예측 모델의 개발 및 검증 결과",
+  openGraph: {
+    title: "Stockit 수요예측 실험 보고서",
+    description: "SKU·판매지점별 향후 90일 판매량 예측 모델의 개발 및 검증 결과",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Stockit 수요예측 실험 보고서" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stockit 수요예측 실험 보고서",
+    description: "SKU·판매지점별 향후 90일 판매량 예측 모델의 개발 및 검증 결과",
+    images: ["/og.png"],
+  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
