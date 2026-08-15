@@ -78,19 +78,23 @@ const stages: Stage[] = [
     columns: [{ label: "고정 Feature", values: ["ID", "calendar", "lag_7/14/28/56", "rolling_mean_7/14/28", "rolling_std_7/28"], planned: true }],
   },
   {
-    id: "운영", title: "예측 및 DB 변환", status: "예정",
+    id: "운영", title: "예측 및 DB 변환", status: "구현 완료 · 실행 대기",
     purpose: "최종 모델의 90일 예측 결과를 서비스 적재 형식으로 전환합니다.",
-    settings: ["미래 90일 일별 예측", "D+7/14/30/60/90 누적", "DEMAND_FORECAST 변환"],
-    result: "미실행 · 모델 등록 및 배포 없음",
-    interpretation: "운영 계약 검증 후에만 DB 적재를 진행합니다.",
-    decision: "Feature 정의와 모델 버전을 함께 기록합니다.",
-    next: "Backend 조회 계약을 검증하고 적재 파이프라인을 확정합니다.",
-    columns: [{ label: "출력", values: ["forecast_date", "predicted_qty", "D+7", "D+14", "D+30", "D+60", "D+90"], planned: true }],
+    settings: ["전체 이력 10,167,592행 재학습", "2026.08.01~10.29 미래 90일 재귀 예측", "D+7/14/30/60/90 누적 변환"],
+    result: "파이프라인·Azure YAML 구현 완료 · 테스트 18개 통과 · Azure 실행 미제출",
+    interpretation: "미래 실제값 없이 이전 예측만 재귀 입력하며 결측·중복·음수와 누적 단조 증가를 검증합니다.",
+    decision: "운영 산출물 형식을 코드로 고정했으며 Azure 유료 실행 전 승인을 받습니다.",
+    next: "E8s_v3 운영 예측 Job을 1회 실행한 뒤 모델과 예측 산출물을 등록합니다.",
+    columns: [
+      { label: "일별 예측", values: ["sku_id", "sales_point_id", "forecast_date", "predicted_qty"] },
+      { label: "DEMAND_FORECAST", values: ["base_date", "predicted_qty_d7", "predicted_qty_d14", "predicted_qty_d30", "predicted_qty_d60", "predicted_qty_d90"] },
+      { label: "메타데이터", values: ["feature_definition.json", "forecast_manifest.json", "model.txt"] },
+    ],
   },
 ];
 
 export function ExperimentTabs() {
-  const [activeId, setActiveId] = useState("Final");
+  const [activeId, setActiveId] = useState("운영");
   const active = stages.find((stage) => stage.id === activeId) ?? stages[0];
   return <div className="stage-tabs">
     <div className="tab-list" role="tablist" aria-label="실험 단계">{stages.map((stage) => <button key={stage.id} role="tab" aria-selected={activeId === stage.id} onClick={() => setActiveId(stage.id)}><b>{stage.id}</b><span>{stage.title}</span><small>{stage.status}</small></button>)}</div>

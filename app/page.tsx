@@ -33,7 +33,7 @@ export default function Home() {
         <div className="nav-links">
           <a href="#overview">프로젝트 개요</a><a href="#data">데이터 구성</a><a href="#automl">실험 결과</a><a href="#models">모델 비교</a><a href="#production">운영 적용</a>
         </div>
-        <span className="status"><i /> 최종 Test 완료</span>
+        <span className="status"><i /> 운영 예측 구현 완료</span>
       </nav>
 
       <section className="hero" id="overview">
@@ -41,9 +41,9 @@ export default function Home() {
         <div className="hero-grid">
           <div><h1>Stockit 수요예측<br /><em>실험 보고서</em></h1><p className="hero-description">SKU·판매지점별 향후 90일 판매량을 예측하기 위한 모델 개발 및 검증 결과를 공유합니다.</p></div>
           <div className="status-summary" aria-label="현재 실험 상태">
-            <div><span>현재 진행 단계</span><strong>최종 Test 90일 평가 완료</strong></div>
+            <div><span>현재 진행 단계</span><strong>운영 90일 예측 파이프라인 구현 완료</strong></div>
             <div><span>최종 모델 구성</span><strong>LGBM-2 · ID + Calendar + Lag + Rolling</strong></div>
-            <div><span>다음 작업</span><strong>모델 등록 · 미래 90일 예측 · DB 변환</strong></div>
+            <div><span>다음 작업</span><strong>Azure 운영 예측 Job 제출 승인 대기</strong></div>
             <div><span>최종 Test Macro NRMSE</span><strong>0.257574 · Custom evaluator</strong></div>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function Home() {
           </section>
 
           <section className="lab-section roadmap-section" id="roadmap" aria-labelledby="roadmap-title">
-            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>E0 AutoML, 공식 이동평균 Baseline, LightGBM Feature ablation과 최종 Test를 모두 완료했습니다. Test 결과를 최종 성능으로 동결했으며, 다음 단계는 모델 등록과 실제 미래 90일 예측 생성입니다.</p></header>
+            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>최종 Test 결과를 동결한 뒤 전체 이력 재학습, 미래 90일 재귀 예측과 DEMAND_FORECAST 변환 파이프라인까지 구현했습니다. 현재 Azure 운영 예측 Job의 비용 승인과 1회 실행만 남았습니다.</p></header>
             <ExperimentTabs />
           </section>
 
@@ -139,7 +139,9 @@ export default function Home() {
           </section>
 
           <section className="lab-section" id="production" aria-labelledby="production-title">
-            <header className="section-head"><span>운영 적용 · 다음 단계</span><h2 id="production-title">운영 적용 절차</h2><p>최종 Test까지 완료했으며 아직 모델 등록·배포는 하지 않았습니다. 다음으로 최종 모델을 등록하고 미래 90일 예측을 서비스 조회 및 DB 적재 형식으로 변환합니다.</p></header>
+            <header className="section-head"><span>운영 적용 · 구현 완료 · 실행 대기</span><h2 id="production-title">운영 90일 예측 파이프라인</h2><p>전체 이력으로 고정 모델을 재학습하고 2026.08.01부터 90일을 재귀 예측하는 코드와 Azure 실행 구성을 완료했습니다. 유료 Job은 아직 제출하지 않았고 모델 등록·DB 적재도 진행하지 않았습니다.</p><i className="planned">Azure 실행 대기</i></header>
+            <div className="run-summary production-summary"><div><span>전체 학습 이력</span><strong>10,167,592행 · 2023.08.01~2026.07.31</strong></div><div><span>미래 예측 구간</span><strong>2026.08.01~2026.10.29 · 90일</strong></div><div><span>검증 상태</span><strong>테스트 18개 통과</strong></div><div><span>Azure 예상 비용</span><strong>E8s_v3 · $0.64/시간 · 최대 약 $2.56</strong></div></div>
+            <div className="production-contract"><article><span>일별 산출물</span><h3>future_daily_predictions.csv</h3><p>SKU·판매지점·예측일별 <code>predicted_qty</code>를 저장합니다. 미래 실제값을 사용하지 않고 이전 예측값만 다음 날짜 Lag/Rolling에 입력합니다.</p></article><article><span>누적 산출물</span><h3>demand_forecast.csv</h3><p>기준일과 D+7·14·30·60·90 누적 예측을 제공합니다. 결측치·중복·음수 및 누적값의 단조 증가를 실행 시 검증합니다.</p></article></div>
             <ol className="pipeline six"><li><b>01</b><span>최종 모델 등록</span><p>Test 결과 확인 후<br />모델 버전 등록</p></li><li><b>02</b><span>일별 예측 생성</span><p>SKU·판매지점별<br />미래 90일 수요예측</p></li><li><b>03</b><span>후처리 결정</span><p>음수·상시 0 규칙 및<br />0 Clip 적용 여부 결정</p></li><li><b>04</b><span>누적 수요 계산</span><p>D+7 · D+14 · D+30<br />D+60 · D+90</p></li><li><b>05</b><span>적재 형식 변환</span><p>DEMAND_FORECAST<br />테이블 형식 적용</p></li><li><b>06</b><span>Feature 기록</span><p>feature_definition_json에<br />Feature·모델 버전 기록</p></li><li><b>07</b><span>DB 적재</span><p>Backend 조회 계약<br />검증 후 적재</p></li></ol>
           </section>
 
