@@ -78,17 +78,17 @@ const stages: Stage[] = [
     columns: [{ label: "고정 Feature", values: ["ID", "calendar", "lag_7/14/28/56", "rolling_mean_7/14/28", "rolling_std_7/28"], planned: true }],
   },
   {
-    id: "운영", title: "예측 및 DB 변환", status: "구현 완료 · 실행 대기",
+    id: "운영", title: "예측 및 DB 변환", status: "완료 · 연동 설계",
     purpose: "최종 모델의 90일 예측 결과를 서비스 적재 형식으로 전환합니다.",
     settings: ["전체 이력 10,167,592행 재학습", "2026.08.01~10.29 미래 90일 재귀 예측", "D+7/14/30/60/90 누적 변환"],
-    result: "파이프라인·Azure YAML 구현 완료 · 테스트 18개 통과 · Azure 실행 미제출",
-    interpretation: "미래 실제값 없이 이전 예측만 재귀 입력하며 결측·중복·음수와 누적 단조 증가를 검증합니다.",
-    decision: "운영 산출물 형식을 코드로 고정했으며 Azure 유료 실행 전 승인을 받습니다.",
-    next: "E8s_v3 운영 예측 Job을 1회 실행한 뒤 모델과 예측 산출물을 등록합니다.",
+    result: "Run silver_wolf_0tl6s2x4ms 완료 · Model stockit-demand-lightgbm:1 등록 · 일별 834,930행 생성",
+    interpretation: "결측·음수·중복·누적 단조 위반이 모두 0이며 9,277개 시계열의 운영 예측을 생성했습니다.",
+    decision: "기존 이력 대상 모델은 확정하고 신규·단기 이력 대상 Cold Start 라우팅을 Backend 계약으로 분리합니다.",
+    next: "행별 예측 근거·신뢰도와 원자적 Forecast 버전 publish를 Backend에 구현합니다.",
     columns: [
       { label: "일별 예측", values: ["sku_id", "sales_point_id", "forecast_date", "predicted_qty"] },
       { label: "DEMAND_FORECAST", values: ["base_date", "predicted_qty_d7", "predicted_qty_d14", "predicted_qty_d30", "predicted_qty_d60", "predicted_qty_d90"] },
-      { label: "메타데이터", values: ["feature_definition.json", "forecast_manifest.json", "model.txt"] },
+      { label: "품질 메타데이터", values: ["forecast_source", "confidence_level", "history_days", "fallback_reason"] },
     ],
   },
 ];

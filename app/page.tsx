@@ -12,11 +12,13 @@ const sections = [
   ["05", "이동평균 Baseline", "baseline"], ["06", "AutoML 결과", "automl"],
   ["07", "LightGBM 결과", "lightgbm"], ["08", "XGBoost 계획", "xgboost"],
   ["09", "모델 비교", "models"], ["10", "최종 Test", "test"], ["11", "운영 적용", "production"],
+  ["12", "Cold Start", "cold-start"], ["13", "위험등급 연계", "risk"],
+  ["14", "배치 적재", "batch"], ["15", "API 계약", "api-contract"],
 ];
 
 const heroMetrics = [
-  ["9,277", "시계열 수"], ["90일", "예측 Horizon"],
-  ["1.338165", "최종 Test MAE"], ["0.627253", "최종 Test R²"],
+  ["9,277", "운영 예측 시계열"], ["90일", "예측 Horizon"],
+  ["834,930", "일별 Forecast 행"], ["9,277", "누적 Forecast 행"],
 ];
 
 const calendarFeatures = [
@@ -31,9 +33,9 @@ export default function Home() {
       <nav className="topbar" aria-label="주요 탐색">
         <a className="brand" href="#overview"><span>ST</span> 수요예측 실험 보고서</a>
         <div className="nav-links">
-          <a href="#overview">프로젝트 개요</a><a href="#data">데이터 구성</a><a href="#automl">실험 결과</a><a href="#models">모델 비교</a><a href="#production">운영 적용</a>
+          <a href="#overview">프로젝트 개요</a><a href="#automl">실험 결과</a><a href="#production">운영 결과</a><a href="#cold-start">Cold Start</a><a href="#api-contract">API 계약</a>
         </div>
-        <span className="status"><i /> 운영 예측 구현 완료</span>
+        <span className="status"><i /> 운영 Forecast 완료</span>
       </nav>
 
       <section className="hero" id="overview">
@@ -41,10 +43,10 @@ export default function Home() {
         <div className="hero-grid">
           <div><h1>Stockit 수요예측<br /><em>실험 보고서</em></h1><p className="hero-description">SKU·판매지점별 향후 90일 판매량을 예측하기 위한 모델 개발 및 검증 결과를 공유합니다.</p></div>
           <div className="status-summary" aria-label="현재 실험 상태">
-            <div><span>현재 진행 단계</span><strong>운영 90일 예측 파이프라인 구현 완료</strong></div>
-            <div><span>최종 모델 구성</span><strong>LGBM-2 · ID + Calendar + Lag + Rolling</strong></div>
-            <div><span>다음 작업</span><strong>Azure 운영 예측 Job 제출 승인 대기</strong></div>
-            <div><span>최종 Test Macro NRMSE</span><strong>0.257574 · Custom evaluator</strong></div>
+            <div><span>운영 Forecast Run</span><strong>silver_wolf_0tl6s2x4ms · 완료</strong></div>
+            <div><span>Azure Model</span><strong>stockit-demand-lightgbm:1</strong></div>
+            <div><span>예측 기간</span><strong>2026.08.01 — 2026.10.29</strong></div>
+            <div><span>다음 작업</span><strong>Cold Start · 위험등급 · Backend 연동</strong></div>
           </div>
         </div>
         <div className="metric-strip">
@@ -64,7 +66,7 @@ export default function Home() {
           </section>
 
           <section className="lab-section roadmap-section" id="roadmap" aria-labelledby="roadmap-title">
-            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>최종 Test 결과를 동결한 뒤 전체 이력 재학습, 미래 90일 재귀 예측과 DEMAND_FORECAST 변환 파이프라인까지 구현했습니다. 현재 Azure 운영 예측 Job의 비용 승인과 1회 실행만 남았습니다.</p></header>
+            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>최종 Test와 운영 Forecast를 완료하고 Azure Model을 등록했습니다. 모델 실험 단계는 종료했으며, 현재는 신규 SKU Cold Start와 위험등급·배치·비동기 API의 Backend 연동 계약을 설계합니다.</p></header>
             <ExperimentTabs />
           </section>
 
@@ -75,7 +77,7 @@ export default function Home() {
             <div className="split-grid">
               <article><span className="dot train-dot" />TRAIN <strong>8,497,732건</strong><small>2023.08.01 — 2026.02.01</small></article>
               <article><span className="dot validation-dot" />VALIDATION <strong>834,930건</strong><small>2026.02.02 — 2026.05.02</small></article>
-              <article><span className="dot test-dot" />TEST · 미평가 <strong>834,930건</strong><small>2026.05.03 — 2026.07.31</small></article>
+              <article><span className="dot test-dot" />TEST · 최종 평가 완료 <strong>834,930건</strong><small>2026.05.03 — 2026.07.31</small></article>
             </div>
             <div className="guardrail"><span>별도 검증 대상</span><p>전체 기간 판매량이 항상 0인 시계열은 38개로 전체의 0.41%입니다. 전체 성능과 별도로 해당 그룹의 오차 및 음수 예측 발생률을 확인합니다.</p></div>
           </section>
@@ -139,10 +141,38 @@ export default function Home() {
           </section>
 
           <section className="lab-section" id="production" aria-labelledby="production-title">
-            <header className="section-head"><span>운영 적용 · 구현 완료 · 실행 대기</span><h2 id="production-title">운영 90일 예측 파이프라인</h2><p>전체 이력으로 고정 모델을 재학습하고 2026.08.01부터 90일을 재귀 예측하는 코드와 Azure 실행 구성을 완료했습니다. 유료 Job은 아직 제출하지 않았고 모델 등록·DB 적재도 진행하지 않았습니다.</p><i className="planned">Azure 실행 대기</i></header>
-            <div className="run-summary production-summary"><div><span>전체 학습 이력</span><strong>10,167,592행 · 2023.08.01~2026.07.31</strong></div><div><span>미래 예측 구간</span><strong>2026.08.01~2026.10.29 · 90일</strong></div><div><span>검증 상태</span><strong>테스트 18개 통과</strong></div><div><span>Azure 예상 비용</span><strong>E8s_v3 · $0.64/시간 · 최대 약 $2.56</strong></div></div>
-            <div className="production-contract"><article><span>일별 산출물</span><h3>future_daily_predictions.csv</h3><p>SKU·판매지점·예측일별 <code>predicted_qty</code>를 저장합니다. 미래 실제값을 사용하지 않고 이전 예측값만 다음 날짜 Lag/Rolling에 입력합니다.</p></article><article><span>누적 산출물</span><h3>demand_forecast.csv</h3><p>기준일과 D+7·14·30·60·90 누적 예측을 제공합니다. 결측치·중복·음수 및 누적값의 단조 증가를 실행 시 검증합니다.</p></article></div>
-            <ol className="pipeline six"><li><b>01</b><span>최종 모델 등록</span><p>Test 결과 확인 후<br />모델 버전 등록</p></li><li><b>02</b><span>일별 예측 생성</span><p>SKU·판매지점별<br />미래 90일 수요예측</p></li><li><b>03</b><span>후처리 결정</span><p>음수·상시 0 규칙 및<br />0 Clip 적용 여부 결정</p></li><li><b>04</b><span>누적 수요 계산</span><p>D+7 · D+14 · D+30<br />D+60 · D+90</p></li><li><b>05</b><span>적재 형식 변환</span><p>DEMAND_FORECAST<br />테이블 형식 적용</p></li><li><b>06</b><span>Feature 기록</span><p>feature_definition_json에<br />Feature·모델 버전 기록</p></li><li><b>07</b><span>DB 적재</span><p>Backend 조회 계약<br />검증 후 적재</p></li></ol>
+            <header className="section-head"><span>운영 적용 · Forecast 완료</span><h2 id="production-title">운영 90일 예측 결과</h2><p>전체 이력으로 고정 모델을 재학습해 2026.08.01부터 90일의 일별·누적 예측을 생성하고 Azure Model을 등록했습니다. Backend DB 적재와 Cold Start 라우팅은 별도 연동 범위입니다.</p><i className="planned done">완료</i></header>
+            <div className="run-summary production-summary"><div><span>Forecast Run</span><strong>silver_wolf_0tl6s2x4ms</strong></div><div><span>Azure Model</span><strong>stockit-demand-lightgbm:1</strong></div><div><span>전체 학습 이력</span><strong>10,167,592행 · 2023.08.01~2026.07.31</strong></div><div><span>미래 예측 구간</span><strong>2026.08.01~2026.10.29 · 90일</strong></div></div>
+            <div className="production-contract"><article><span>일별 산출물</span><h3>future_daily_predictions.csv</h3><p>SKU·판매지점·예측일별 <code>predicted_qty</code> 834,930행을 생성했습니다. 미래 실제값 없이 이전 예측만 Lag/Rolling에 재귀 입력합니다.</p></article><article><span>누적 산출물</span><h3>demand_forecast.csv</h3><p>9,277개 시계열의 D+7·14·30·60·90 누적 예측을 생성했습니다. 서비스 적재 전 행별 품질 메타데이터를 결합해야 합니다.</p></article></div>
+            <div className="quality-strip"><div><strong>0</strong><span>결측</span></div><div><strong>0</strong><span>음수</span></div><div><strong>0</strong><span>중복</span></div><div><strong>0</strong><span>누적 단조 위반</span></div></div>
+            <ol className="pipeline six"><li><b>01</b><span>최종 모델 등록</span><p>stockit-demand-<br />lightgbm:1</p></li><li><b>02</b><span>일별 예측 생성</span><p>834,930행<br />생성 완료</p></li><li><b>03</b><span>품질 검증</span><p>결측·음수·중복<br />위반 0건</p></li><li><b>04</b><span>누적 수요 계산</span><p>D+7 · D+14 · D+30<br />D+60 · D+90</p></li><li><b>05</b><span>Cold Start 보완</span><p>신규·단기 이력<br />행별 Fallback</p></li><li><b>06</b><span>Staging 검증</span><p>Coverage·FK·Schema<br />검증 후 Publish</p></li><li><b>07</b><span>위험등급 재계산</span><p>예측 신뢰도와 재고<br />요소를 함께 반영</p></li></ol>
+          </section>
+
+          <section className="lab-section" id="cold-start" aria-labelledby="cold-start-title">
+            <header className="section-head"><span>운영 연동 설계</span><h2 id="cold-start-title">신규 SKU Cold Start 라우팅</h2><p>판매 이력 56일 미만은 오류나 전체 롤백 사유가 아닙니다. 활성 SKU × 판매 가능 판매처 또는 현재 재고 조합으로 예측 Universe를 먼저 만들고 판매 이력을 LEFT JOIN해 행별 예측 경로를 선택합니다.</p></header>
+            <div className="universe-rule"><span>예측 Universe</span><strong>활성 SKU × 판매 가능 판매처</strong><b>또는</b><strong>현재 재고가 존재하는 SKU × 판매처</strong><p>SALES_DAILY에 이미 존재하는 조합만 사용하는 방식은 신규 SKU가 누락되므로 금지합니다.</p></div>
+            <div className="table-wrap routing-table"><table><thead><tr><th>조건</th><th>예측 경로</th><th>저장 source</th><th>기본 신뢰도</th></tr></thead><tbody><tr className="final-result"><td>이력 56일 이상</td><td>등록 LightGBM</td><td>LIGHTGBM</td><td>HIGH</td></tr><tr><td>같은 SKU가 다른 판매처에 이력 있음</td><td>타 판매처 패턴 × 판매처 규모 보정</td><td>SAME_SKU_OTHER_POINT</td><td>MEDIUM</td></tr><tr><td>완전 신규 SKU</td><td>동일 카테고리·판매처 중앙값, 가능하면 가격·포장 유사군</td><td>CATEGORY_MEDIAN</td><td>LOW</td></tr><tr><td>해당 판매처 유사 이력 없음</td><td>카테고리 전체 중앙값 × 판매처 규모</td><td>CATEGORY_MEDIAN</td><td>LOW</td></tr><tr className="manual-row"><td>근거 데이터 없음</td><td>초기값 입력 또는 수동 검토</td><td>MANUAL_INITIAL</td><td>LOW</td></tr></tbody></table></div>
+            <div className="no-zero-rule"><b>임의 0 예측 금지</b><p>신규 SKU를 0으로 예측하면 부족 위험이 숨겨질 수 있습니다. Fallback 근거가 없으면 0을 채우지 않고 수동 검토 대상으로 남깁니다.</p></div>
+            <div className="metadata-grid"><article><span>forecast_source</span><p>LIGHTGBM · SAME_SKU_OTHER_POINT · CATEGORY_MEDIAN · MANUAL_INITIAL</p></article><article><span>confidence_level</span><p>HIGH · MEDIUM · LOW</p></article><article><span>history_days</span><p>SKU·판매처 조합에서 실제 확보된 이력 일수</p></article><article><span>fallback_reason</span><p>Fallback 세부 원인과 선택된 보정 경로</p></article></div>
+            <p className="contract-note">이 값은 모델 버전 전체가 아니라 예측 행마다 달라지므로 <code>DEMAND_FORECAST</code> 또는 별도 Quality 테이블에 저장해야 합니다.</p>
+          </section>
+
+          <section className="lab-section" id="risk" aria-labelledby="risk-title">
+            <header className="section-head"><span>위험등급 연계</span><h2 id="risk-title">예측은 위험 판단의 한 입력입니다</h2><p>수요예측만으로 위험등급을 결정하지 않습니다. 현재고·예약재고·입고예정·소비기한·stock_days와 예측 신뢰도를 함께 사용합니다.</p></header>
+            <div className="risk-inputs"><code>현재고</code><code>예약재고</code><code>입고예정</code><code>소비기한</code><code>stock_days</code><code>수요예측</code><code>confidence_level</code></div>
+            <div className="confidence-policy"><article className="high"><b>HIGH</b><h3>기존 위험등급 계산</h3><p>충분한 이력과 LightGBM 예측을 사용해 기존 재고 위험 규칙을 적용합니다.</p></article><article className="medium"><b>MEDIUM</b><h3>계산 결과 + 불확실성</h3><p>위험등급은 계산하되 화면과 응답에 보완 예측임을 명확히 표시합니다.</p></article><article className="low"><b>LOW</b><h3>GOOD 판정 금지</h3><p>최소 WARNING 또는 REVIEW_REQUIRED로 올리고 담당자 검토를 요구합니다.</p></article></div>
+          </section>
+
+          <section className="lab-section" id="batch" aria-labelledby="batch-title">
+            <header className="section-head"><span>배치 적재 및 롤백</span><h2 id="batch-title">새 버전을 검증한 뒤 원자적으로 Publish</h2><p>Cold Start는 정상 Fallback으로 처리합니다. 새 배치가 실패하면 기존 ACTIVE Forecast를 유지하며 기존 값을 먼저 삭제했다가 복원하는 방식은 사용하지 않습니다.</p></header>
+            <ol className="batch-flow"><li><b>01</b><span>Universe 생성</span></li><li><b>02</b><span>판매 이력 LEFT JOIN</span></li><li><b>03</b><span>모델 / Fallback 라우팅</span></li><li><b>04</b><span>Staging 적재</span></li><li><b>05</b><span>Coverage·제약 검증</span></li><li><b>06</b><span>Forecast 버전 Publish</span></li><li><b>07</b><span>위험등급 재계산</span></li></ol>
+            <div className="error-policy"><article><span>정상 처리</span><h3>Cold Start / 단기 이력</h3><p>Fallback 예측과 품질 메타데이터를 생성하고 배치를 계속합니다.</p></article><article><span>전체 배치 실패</span><h3>Fatal 오류만</h3><p>CSV 스키마 손상, DB 연결 실패, 중복, 비정상 수치, FK 불일치에만 적용합니다.</p></article><article><span>실패 시 보존</span><h3>기존 ACTIVE 유지</h3><p>새 버전 Publish 전까지 운영 중인 Forecast를 절대 지우지 않습니다.</p></article></div>
+          </section>
+
+          <section className="lab-section" id="api-contract" aria-labelledby="api-title">
+            <header className="section-head"><span>Backend / UI 계약 · 설계</span><h2 id="api-title">비동기 Forecast Job 상태 표시</h2><p>실제 구현은 별도 Backend 저장소에서 진행합니다. 이 화면은 요청·조회 계약과 완료 후 반드시 보여줄 Coverage 지표를 정의합니다.</p></header>
+            <div className="api-grid"><article><span>작업 생성</span><code>POST /api/v1/demand-forecast-jobs</code><strong>202 Accepted + jobId</strong></article><article><span>상태 조회</span><code>GET /api/v1/demand-forecast-jobs/{`{jobId}`}</code><strong>status · duration · forecast period</strong></article></div>
+            <div className="coverage-preview"><header><div><span>Forecast Job 완료 화면</span><h3>모델 Coverage와 검토 대상을 함께 표시</h3></div><b>COMPLETED</b></header><div><article><span>totalRows</span><strong>전체 예측 행</strong></article><article><span>modelForecastRows</span><strong>LightGBM 적용</strong></article><article><span>fallbackForecastRows</span><strong>보완 예측</strong></article><article><span>manualReviewRows</span><strong>수동 검토</strong></article><article><span>rejectedRows</span><strong>거부 행</strong></article></div><p>모델 성능뿐 아니라 모델/보완 예측 비율, LOW confidence와 수동검토 건수를 운영 화면의 핵심 지표로 제공합니다.</p></div>
           </section>
 
           <footer className="site-footer"><div><span>ST</span><b>Stockit 수요예측 실험 보고서</b></div><p>Baseline → Feature 비교 → 모델 선정 → Test → 운영 적용</p><a href="#overview">맨 위로 ↑</a></footer>
