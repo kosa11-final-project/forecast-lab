@@ -31,6 +31,18 @@ npm run dev
 npm run build
 ```
 
+GitHub Pages용 정적 빌드는 다음 명령으로 확인할 수 있습니다.
+
+```bash
+npm run build:pages
+```
+
+## CI/CD
+
+`main` 브랜치에 변경 사항을 푸시하면 GitHub Actions가 정적 사이트를 빌드하고 GitHub Pages에 자동 배포합니다. Pull Request에서는 동일한 빌드 검증만 수행하며 배포하지 않습니다.
+
+최초 한 번 GitHub 저장소의 **Settings → Pages → Build and deployment → Source**를 **GitHub Actions**로 선택해야 합니다. 이후 배포 주소는 `https://kosa11-final-project.github.io/forecast-lab/`입니다.
+
 ## 기술 구성
 
 - React / TypeScript
