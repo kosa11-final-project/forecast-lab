@@ -120,6 +120,15 @@ export default function Home() {
               <article className="zero-rule"><span>상시 0 정책 · 적용</span><h3>Train 기준 38개 시계열의 예측을 0으로 고정</h3><dl><div><dt>MAE</dt><dd>1.215846</dd></div><div><dt>RMSE</dt><dd>2.044311</dd></div><div><dt>R²</dt><dd>0.653267</dd></div><div><dt>Macro NRMSE</dt><dd>0.255497</dd></div></dl><p>이 정책은 이동평균 Baseline과 E1 LightGBM에 동일하게 적용했습니다.</p></article>
             </div>
             <div className="leakage-note"><span>누수 방지 검증</span><p>Validation 90일을 날짜 순서로 예측하며 실제 Validation Target을 이력에 넣지 않습니다. 이전 날짜의 예측값만 다음 날짜 Lag/Rolling Feature에 재귀 입력했습니다.</p></div>
+            <div className="lag-rationale">
+              <header><span>Lag 설계 근거</span><h3>28일·56일은 월 단위가 아니라 주간 계절성을 위한 값입니다</h3><p>일별 수요예측에서는 같은 요일의 판매 패턴을 비교하기 위해 7의 배수를 사용합니다. 따라서 <code>lag_30</code>, <code>lag_60</code> 대신 <code>lag_28</code>, <code>lag_56</code>을 의도적으로 선택했습니다.</p></header>
+              <div className="lag-purpose-grid">
+                <article><span>모델 입력 Feature</span><strong>7 · 14 · 28 · 56일 전</strong><ul><li><code>lag_7</code> · 정확히 1주 전</li><li><code>lag_14</code> · 정확히 2주 전</li><li><code>lag_28</code> · 4주 전 같은 요일</li><li><code>lag_56</code> · 8주 전 같은 요일</li></ul></article>
+                <article><span>DB 누적 예측 구간</span><strong>D7 · D14 · D30 · D60 · D90</strong><p>향후 기간별 누적 수요를 저장하기 위한 결과 구간입니다. 과거 판매량을 참조하는 Lag Feature와 목적이 다릅니다.</p></article>
+              </div>
+              <div className="weekday-example"><b>오늘이 월요일이라면</b><span><code>lag_28</code> → 4주 전 월요일</span><span><code>lag_56</code> → 8주 전 월요일</span><i>반면 lag_30은 요일이 2일, lag_60은 4일 이동합니다.</i></div>
+              <footer>월 단위 패턴을 추가 검증하려면 <code>lag_30</code>, <code>lag_60</code>을 별도 실험에 포함할 수 있지만, 확정 모델을 변경하려면 동일한 누수 방지 기준으로 재학습·Validation 평가가 필요합니다.</footer>
+            </div>
           </section>
 
           <section className="lab-section model-plan muted" id="xgboost" aria-labelledby="xgb-title">
