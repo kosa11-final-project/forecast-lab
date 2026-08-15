@@ -36,7 +36,7 @@ const stages: Stage[] = [
     result: "상시 0 정책 적용 · MAE 1.215846 · RMSE 2.044311 · R² 0.653267 · Custom Macro NRMSE 0.255497",
     interpretation: "E0 대비 MAE 8.49%, RMSE 2.34% 개선이며 MA(30)보다 MAE·RMSE·R²가 모두 우수합니다. 단, E0 NRMSE와 계산 정의는 완전히 같지 않습니다.",
     decision: "Ablation의 모든 지표에서 가장 우수해 LightGBM Validation 후보로 선정했습니다.",
-    next: "고정된 구성을 Train+Validation으로 재학습한 뒤 Test 90일을 한 번만 평가합니다.",
+    next: "최종 Test 결과를 동결하고 모델 등록 및 미래 90일 예측 단계로 이동합니다.",
     columns: [
       { label: "ID·Calendar", values: ["sku_id_code", "sales_point_id_code", "day_of_week", "is_weekend", "month_of_year", "quarter_of_year", "week_of_year", "day_of_month", "is_month_start", "is_month_end"] },
       { label: "Lag", values: ["lag_7", "lag_14", "lag_28", "lag_56"] },
@@ -60,7 +60,7 @@ const stages: Stage[] = [
     result: "LGBM-0 MAE 1.386455 → LGBM-1 1.274493 → LGBM-2 1.215846",
     interpretation: "Lag 추가로 MAE 8.08%·RMSE 6.37%, Rolling 추가로 MAE 4.60%·RMSE 1.88%가 추가 개선됐습니다.",
     decision: "네 핵심 지표가 단계적으로 개선된 LGBM-2를 Validation 후보로 선정했습니다.",
-    next: "Test 전용 Job은 준비됐으며 비용 승인 후 단 한 번 제출합니다.",
+    next: "선정된 LGBM-2의 최종 Test 평가까지 완료했습니다.",
     columns: [
       { label: "LGBM-0", values: ["ID", "calendar"] },
       { label: "LGBM-1", values: ["ID", "calendar", "lag_7", "lag_14", "lag_28", "lag_56"] },
@@ -68,13 +68,13 @@ const stages: Stage[] = [
     ],
   },
   {
-    id: "Final", title: "최종 Test", status: "미평가",
+    id: "Final", title: "최종 Test", status: "완료 · 결과 동결",
     purpose: "Validation에서 선정한 후보 하나의 일반화 성능을 확인합니다.",
-    settings: ["후보: LGBM-2 Lag+Rolling", "Train v3 + Validation v2 재학습", "Test v4 · 90일 1회 평가"],
-    result: "전용 실행 구성 준비 완료 · Azure Job 미제출 · Test 미사용",
-    interpretation: "Test 결과를 확인한 뒤 모델이나 Feature를 다시 선택하지 않습니다.",
-    decision: "Test 결과로 Feature나 파라미터를 다시 조정하지 않으며 평가 전 모델 등록·배포도 하지 않습니다.",
-    next: "사용자 비용 승인 후 최종 Test Job을 한 번만 제출합니다.",
+    settings: ["Job: stoic_deer_h8qqd422qz", "Train v3 + Validation v2 재학습", "Test v4 · 90일 fixed-origin recursive"],
+    result: "MAE 1.338165 · RMSE 2.247809 · R² 0.627253 · Macro NRMSE 0.257574",
+    interpretation: "Validation 대비 MAE 10.06%, RMSE 9.95% 증가했지만 R² 0.627253으로 일반화 성능을 유지했습니다.",
+    decision: "Test 결과를 최종 일반화 성능으로 동결하며 Test 기반 추가 튜닝은 하지 않습니다.",
+    next: "최종 모델 등록, 미래 90일 예측 생성과 DEMAND_FORECAST 변환을 진행합니다.",
     columns: [{ label: "고정 Feature", values: ["ID", "calendar", "lag_7/14/28/56", "rolling_mean_7/14/28", "rolling_std_7/28"], planned: true }],
   },
   {
@@ -90,7 +90,7 @@ const stages: Stage[] = [
 ];
 
 export function ExperimentTabs() {
-  const [activeId, setActiveId] = useState("E1-L");
+  const [activeId, setActiveId] = useState("Final");
   const active = stages.find((stage) => stage.id === activeId) ?? stages[0];
   return <div className="stage-tabs">
     <div className="tab-list" role="tablist" aria-label="실험 단계">{stages.map((stage) => <button key={stage.id} role="tab" aria-selected={activeId === stage.id} onClick={() => setActiveId(stage.id)}><b>{stage.id}</b><span>{stage.title}</span><small>{stage.status}</small></button>)}</div>
