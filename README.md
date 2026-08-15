@@ -1,100 +1,43 @@
-# vinext-starter
+# Stockit Demand Forecast Lab
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+SKU·판매지점별 향후 90일 수요예측 실험과 운영 연동 설계를 공유하는 정적 기술 보고서입니다.
 
-## Prerequisites
+## 배포 사이트
 
-- Node.js `>=22.13.0`
+[Stockit Demand Forecast Lab](https://stockit-demand-forecast-lab.dnwls0723.chatgpt.site/)
 
-## Quick Start
+## 주요 내용
+
+- E0 Azure AutoML 기준선
+- 이동평균 MA(7/14/30) Baseline
+- LightGBM Calendar·Lag·Rolling Feature ablation
+- 누수 방지 90일 재귀 Validation 및 최종 Test
+- 운영 90일 Forecast와 Azure Model 등록 결과
+- 신규 SKU Cold Start 및 행별 신뢰도 설계
+- 위험등급, 원자적 배치 Publish, 비동기 API/UI 계약
+
+## 로컬 실행
+
+Node.js `22.13.0` 이상이 필요합니다.
 
 ```bash
 npm install
 npm run dev
+```
+
+배포용 빌드 검증:
+
+```bash
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+## 기술 구성
 
-## Included Shape
+- React / TypeScript
+- vinext / Vite
+- Cloudflare Workers 호환 빌드
+- Pretendard Variable
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+## 저장소 범위
 
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+이 저장소에는 보고서 웹사이트와 운영 계약 문서만 포함합니다. 실제 ML 학습 코드, 데이터와 Backend 구현은 별도 저장소에서 관리합니다.
