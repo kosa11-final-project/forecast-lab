@@ -10,13 +10,13 @@ const sections = [
   ["01", "프로젝트 개요", "overview"], ["02", "전체 실험 계획", "roadmap"],
   ["03", "데이터 구성", "data"], ["04", "검증 원칙", "design"],
   ["05", "이동평균 Baseline", "baseline"], ["06", "AutoML 결과", "automl"],
-  ["07", "LightGBM 계획", "lightgbm"], ["08", "XGBoost 계획", "xgboost"],
+  ["07", "LightGBM 결과", "lightgbm"], ["08", "XGBoost 계획", "xgboost"],
   ["09", "모델 비교", "models"], ["10", "최종 Test", "test"], ["11", "운영 적용", "production"],
 ];
 
 const heroMetrics = [
   ["9,277", "시계열 수"], ["90일", "예측 Horizon"],
-  ["1.3287", "Validation MAE"], ["0.63569", "Validation R²"],
+  ["1.219937", "E1-L Validation MAE"], ["0.652927", "E1-L Validation R²"],
 ];
 
 const calendarFeatures = [
@@ -33,7 +33,7 @@ export default function Home() {
         <div className="nav-links">
           <a href="#overview">프로젝트 개요</a><a href="#data">데이터 구성</a><a href="#automl">실험 결과</a><a href="#models">모델 비교</a><a href="#production">운영 적용</a>
         </div>
-        <span className="status"><i /> AutoML 진단 완료</span>
+        <span className="status"><i /> E1 LightGBM 완료</span>
       </nav>
 
       <section className="hero" id="overview">
@@ -41,10 +41,10 @@ export default function Home() {
         <div className="hero-grid">
           <div><h1>Stockit 수요예측<br /><em>실험 보고서</em></h1><p className="hero-description">SKU·판매지점별 향후 90일 판매량을 예측하기 위한 모델 개발 및 검증 결과를 공유합니다.</p></div>
           <div className="status-summary" aria-label="현재 실험 상태">
-            <div><span>현재 진행 단계</span><strong>AutoML 진단 완료</strong></div>
-            <div><span>현재 기준 모델</span><strong>E0 VotingEnsemble</strong></div>
-            <div><span>다음 작업</span><strong>이동평균 Baseline 평가 및 LightGBM 실험</strong></div>
-            <div><span>Validation NRMSE</span><strong>0.24892</strong></div>
+            <div><span>현재 진행 단계</span><strong>E1 LightGBM Lag/Rolling v2 완료</strong></div>
+            <div><span>현재 비교 상태</span><strong>E0 기준 모델 · E1-L 후보 검토</strong></div>
+            <div><span>다음 작업</span><strong>MA Baseline · 상시 0 규칙 · LightGBM ablation</strong></div>
+            <div><span>E1-L Custom Macro NRMSE</span><strong>0.259569 · 계산 기준 주의</strong></div>
           </div>
         </div>
         <div className="metric-strip">
@@ -64,7 +64,7 @@ export default function Home() {
           </section>
 
           <section className="lab-section roadmap-section" id="roadmap" aria-labelledby="roadmap-title">
-            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">전체 실험 계획</h2><p>동일한 데이터 분할과 평가 기준을 사용하여 Baseline, Feature 조합 및 모델별 성능을 비교합니다.</p></header>
+            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>E0 AutoML과 E1 LightGBM 결과를 기준으로 공식 Baseline, 상시 0 규칙 및 Feature ablation을 검증한 뒤 Validation 후보 하나를 선정합니다.</p></header>
             <ExperimentTabs />
           </section>
 
@@ -106,29 +106,36 @@ export default function Home() {
           </section>
 
           <section className="lab-section model-plan" id="lightgbm" aria-labelledby="lgbm-title">
-            <header className="section-head"><span>LightGBM · 예정</span><h2 id="lgbm-title">LightGBM 실험 계획</h2><p>LightGBM을 고정한 상태에서 Feature 조합을 단계적으로 추가하여 각 Feature의 성능 기여도를 검증합니다.</p><i className="planned">예정</i></header>
-            <div className="model-layout"><ol className="experiment-sequence"><li><b>LGBM-M0</b><span>기본 Feature</span></li><li><b>LGBM-M1</b><span>Calendar Feature</span></li><li><b>LGBM-M2</b><span>Lag 및 Rolling Feature</span></li><li><b>LGBM-M3</b><span>Calendar + Lag/Rolling</span></li><li><b>LGBM-M4</b><span>최소 Master Feature 추가</span></li></ol><div className="recipe"><h3>Feature 후보 및 검증 설정</h3><p><span>Lag</span>7 · 14 · 28 · 56</p><p><span>Rolling mean</span>7 · 14 · 28</p><p><span>Rolling std</span>7 · 28</p><p><span>Calendar</span>요일 · 주말 여부 · 월</p><p><span>Validation</span>90일 재귀 예측</p></div></div>
+            <header className="section-head"><span>LightGBM · 완료 · 후보 검토</span><h2 id="lgbm-title">E1 LightGBM Lag/Rolling v2 결과</h2><p>누수 방지 Lag/Rolling Feature를 사용한 LightGBM을 90일 고정 Forecast Origin 방식으로 평가했습니다. Test는 사용하지 않았고 모델 등록·배포도 진행하지 않았습니다.</p><i className="planned done">완료</i></header>
+            <div className="run-summary"><div><span>Azure Job ID</span><strong>tough_ship_2n7nk8qrwz</strong></div><div><span>Train</span><strong>stockit-demand-e0-train:3 · 8,497,732행</strong></div><div><span>Validation</span><strong>stockit-demand-e0-validation:2 · 834,930행</strong></div><div><span>시계열</span><strong>9,277개</strong></div></div>
+            <div className="table-wrap lgbm-comparison"><table><thead><tr><th>Validation 지표</th><th>E0 VotingEnsemble</th><th>E1-L LightGBM v2</th><th>변화</th></tr></thead><tbody><tr><td>MAE</td><td>1.3287</td><td><b>1.219937</b></td><td className="improved">8.19% 개선</td></tr><tr><td>RMSE</td><td>2.0933</td><td><b>2.045311</b></td><td className="improved">2.29% 개선</td></tr><tr><td>R²</td><td>0.63569</td><td><b>0.652927</b></td><td className="improved">+0.01724</td></tr><tr><td>Macro NRMSE</td><td>0.24892</td><td>0.259569*</td><td className="declined">4.28% 악화</td></tr></tbody></table></div>
+            <div className="metric-caution"><b>* 지표 비교 주의</b><p>E1-L Macro NRMSE는 상시 0 시계열에 단위 분모를 사용하는 custom evaluator 결과입니다. Azure AutoML E0 NRMSE와 계산 정의가 완전히 동일하지 않으므로 직접적인 최종 우열 판단에는 사용하지 않습니다.</p></div>
+            <div className="lgbm-detail-grid">
+              <article className="feature-importance"><h3>Feature importance · gain 기준</h3><div><span>rolling_mean_28</span><i><b style={{ width: "77.67%" }} /></i><strong>77.67%</strong></div><div><span>rolling_mean_14</span><i><b style={{ width: "7.79%" }} /></i><strong>7.79%</strong></div><div><span>rolling_std_28</span><i><b style={{ width: "4.66%" }} /></i><strong>4.66%</strong></div><div><span>day_of_week</span><i><b style={{ width: "2.66%" }} /></i><strong>2.66%</strong></div><div><span>lag_56</span><i><b style={{ width: "2.25%" }} /></i><strong>2.25%</strong></div></article>
+              <article className="zero-rule"><span>상시 0 보정 참고 결과</span><h3>Train 기준 38개 시계열을 0으로 고정</h3><dl><div><dt>MAE</dt><dd>1.215846</dd></div><div><dt>Macro NRMSE</dt><dd>0.255497</dd></div></dl><p>운영 규칙으로 확정되지 않은 참고 결과입니다. 공식 Baseline과 ablation 전에 적용 여부를 결정합니다.</p></article>
+            </div>
+            <div className="leakage-note"><span>누수 방지 검증</span><p>Validation 90일을 날짜 순서로 예측하며 실제 Validation Target을 이력에 넣지 않습니다. 이전 날짜의 예측값만 다음 날짜 Lag/Rolling Feature에 재귀 입력했습니다.</p></div>
           </section>
 
           <section className="lab-section model-plan muted" id="xgboost" aria-labelledby="xgb-title">
-            <header className="section-head"><span>XGBoost · 대기</span><h2 id="xgb-title">XGBoost 비교 실험</h2><p>LightGBM에서 성능이 가장 좋았던 Feature 조합을 XGBoost에 동일하게 적용하여 최종 후보 모델을 비교합니다.</p><i className="planned">대기</i></header>
-            <div className="model-layout"><div className="lead small-lead">현재 결과 수치는 없습니다. LightGBM 실험과 Feature 조합 선정이 완료된 후 실행합니다.</div><div className="recipe"><h3>실행 조건</h3><p><span>01</span>LightGBM 파이프라인 검증 완료</p><p><span>02</span>최적 Feature 조합 선정</p><p><span>03</span>동일한 데이터 분할과 평가 기준 적용</p></div></div>
+            <header className="section-head"><span>XGBoost · 대기</span><h2 id="xgb-title">XGBoost 비교 실험</h2><p>현재 우선순위는 MA Baseline, 상시 0 규칙과 LightGBM ablation입니다. 해당 검증 후 필요할 경우 최적 Feature 조합을 XGBoost에 동일하게 적용합니다.</p><i className="planned">대기</i></header>
+            <div className="model-layout"><div className="lead small-lead">현재 실행 결과는 없습니다. Validation 후보 선정에 추가 비교가 필요할 때 조건부로 진행합니다.</div><div className="recipe"><h3>실행 조건</h3><p><span>01</span>공식 MA Baseline 평가 완료</p><p><span>02</span>LightGBM ablation 및 최적 조합 선정</p><p><span>03</span>동일한 데이터 분할과 평가 기준 적용</p></div></div>
           </section>
 
           <section className="lab-section" id="models" aria-labelledby="models-title">
             <header className="section-head"><span>모델 비교</span><h2 id="models-title">모델 성능 비교</h2></header>
-            <div className="table-wrap"><table><thead><tr><th>MODEL</th><th>상태</th><th>MAE</th><th>RMSE</th><th>R²</th><th>NRMSE ↓</th></tr></thead><tbody><tr className="current"><td>E0 · VotingEnsemble</td><td><b>기준 후보</b></td><td>1.3287</td><td>2.0933</td><td>0.63569</td><td>0.24892</td></tr><tr><td>E1 · Calendar AutoML</td><td>후보 제외</td><td>1.3287</td><td>2.0933</td><td>0.63569</td><td>0.24892</td></tr><tr><td>MA(7/14/30)</td><td>다음 작업</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>LightGBM</td><td>예정</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>XGBoost</td><td>대기</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
-            <div className="evaluation"><h3>평가 기준</h3><ul><li><b>주 지표</b> NRMSE</li><li><b>보조 지표</b> MAE, RMSE, R²</li><li>SKU·판매지점별 오차 분포</li><li>항상 0인 시계열의 예측 성능</li><li>음수 예측 발생률</li><li>D+7, D+14, D+30, D+60, D+90 누적 오차</li></ul></div>
+            <div className="table-wrap"><table><thead><tr><th>MODEL</th><th>상태</th><th>MAE</th><th>RMSE</th><th>R²</th><th>Macro NRMSE ↓</th></tr></thead><tbody><tr className="current"><td>E0 · VotingEnsemble</td><td><b>기준 모델</b></td><td>1.3287</td><td>2.0933</td><td>0.63569</td><td>0.24892</td></tr><tr><td>E1-C · Calendar AutoML</td><td>후보 제외</td><td>1.3287</td><td>2.0933</td><td>0.63569</td><td>0.24892</td></tr><tr className="review"><td>E1-L · LightGBM Lag/Rolling v2</td><td><b>후보 검토</b></td><td>1.219937</td><td>2.045311</td><td>0.652927</td><td>0.259569*</td></tr><tr><td>B0 · MA(7/14/30)</td><td>다음 작업</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>A1 · LightGBM ablation</td><td>예정</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>XGBoost</td><td>대기</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
+            <div className="evaluation"><h3>평가 기준</h3><ul><li><b>행 단위 지표</b> MAE, RMSE, R²</li><li><b>시계열 균형 지표</b> Macro NRMSE</li><li>지표 계산 정의 일치 여부</li><li>항상 0인 38개 시계열 성능</li><li>음수 예측 발생률</li><li>D+7, D+14, D+30, D+60, D+90 누적 오차</li></ul><p>* E1-L Custom Macro NRMSE는 E0 AutoML NRMSE와 계산 정의가 완전히 같지 않아 참고 비교로만 사용합니다.</p></div>
           </section>
 
           <section className="lab-section" id="test" aria-labelledby="test-title">
-            <header className="section-head"><span>최종 Test · 미평가</span><h2 id="test-title">최종 Test 평가 계획</h2><p>Validation 결과로 최종 후보 모델 하나를 선정한 후, 2026.05.03~2026.07.31의 Test 구간을 한 번만 평가합니다. Test 결과를 확인한 뒤 모델이나 Feature를 다시 선택하지 않습니다.</p></header>
+            <header className="section-head"><span>최종 Test · 미평가</span><h2 id="test-title">최종 Test 평가 계획</h2><p>현재 E1-L 실험까지 Test는 사용하지 않았습니다. 공식 Baseline, 상시 0 규칙과 ablation 결과로 Validation 후보 하나를 선정한 후, 2026.05.03~2026.07.31 구간을 한 번만 평가합니다.</p></header>
             <div className="test-lock"><span>Test 평가 구간</span><strong>2026.05.03 — 2026.07.31</strong><p>Validation 기준으로 최종 후보 1개를 선정하기 전까지 평가에 사용하지 않습니다.</p><i>최종 후보 선정 전 사용 금지</i></div>
           </section>
 
           <section className="lab-section" id="production" aria-labelledby="production-title">
-            <header className="section-head"><span>운영 적용 · 예정</span><h2 id="production-title">운영 적용 절차</h2><p>최종 모델의 일별 예측 결과를 서비스 조회 및 DB 적재 형식으로 변환합니다.</p></header>
-            <ol className="pipeline six"><li><b>01</b><span>일별 예측 생성</span><p>SKU·판매지점별<br />90일 수요예측</p></li><li><b>02</b><span>후처리 결정</span><p>음수 예측 확인 및<br />0 Clip 적용 여부 결정</p></li><li><b>03</b><span>누적 수요 계산</span><p>D+7 · D+14 · D+30<br />D+60 · D+90</p></li><li><b>04</b><span>적재 형식 변환</span><p>DEMAND_FORECAST<br />테이블 형식 적용</p></li><li><b>05</b><span>Feature 기록</span><p>feature_definition_json에<br />Feature·모델 버전 기록</p></li><li><b>06</b><span>DB 적재</span><p>Backend 조회 계약<br />검증 후 적재</p></li></ol>
+            <header className="section-head"><span>운영 적용 · 예정</span><h2 id="production-title">운영 적용 절차</h2><p>현재 모델은 등록·배포하지 않았습니다. Test 평가 이후 최종 모델을 등록하고 미래 90일 예측을 서비스 조회 및 DB 적재 형식으로 변환합니다.</p></header>
+            <ol className="pipeline six"><li><b>01</b><span>최종 모델 등록</span><p>Test 결과 확인 후<br />모델 버전 등록</p></li><li><b>02</b><span>일별 예측 생성</span><p>SKU·판매지점별<br />미래 90일 수요예측</p></li><li><b>03</b><span>후처리 결정</span><p>음수·상시 0 규칙 및<br />0 Clip 적용 여부 결정</p></li><li><b>04</b><span>누적 수요 계산</span><p>D+7 · D+14 · D+30<br />D+60 · D+90</p></li><li><b>05</b><span>적재 형식 변환</span><p>DEMAND_FORECAST<br />테이블 형식 적용</p></li><li><b>06</b><span>Feature 기록</span><p>feature_definition_json에<br />Feature·모델 버전 기록</p></li><li><b>07</b><span>DB 적재</span><p>Backend 조회 계약<br />검증 후 적재</p></li></ol>
           </section>
 
           <footer className="site-footer"><div><span>ST</span><b>Stockit 수요예측 실험 보고서</b></div><p>Baseline → Feature 비교 → 모델 선정 → Test → 운영 적용</p><a href="#overview">맨 위로 ↑</a></footer>
