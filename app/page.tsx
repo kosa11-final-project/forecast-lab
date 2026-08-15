@@ -16,7 +16,7 @@ const sections = [
 
 const heroMetrics = [
   ["9,277", "시계열 수"], ["90일", "예측 Horizon"],
-  ["1.219937", "E1-L Validation MAE"], ["0.652927", "E1-L Validation R²"],
+  ["1.215846", "E1-L Validation MAE"], ["0.653267", "E1-L Validation R²"],
 ];
 
 const calendarFeatures = [
@@ -41,10 +41,10 @@ export default function Home() {
         <div className="hero-grid">
           <div><h1>Stockit 수요예측<br /><em>실험 보고서</em></h1><p className="hero-description">SKU·판매지점별 향후 90일 판매량을 예측하기 위한 모델 개발 및 검증 결과를 공유합니다.</p></div>
           <div className="status-summary" aria-label="현재 실험 상태">
-            <div><span>현재 진행 단계</span><strong>E1 LightGBM Lag/Rolling v2 완료</strong></div>
+            <div><span>현재 진행 단계</span><strong>공식 MA Baseline 및 E1 상시 0 정책 평가 완료</strong></div>
             <div><span>현재 비교 상태</span><strong>E0 기준 모델 · E1-L 후보 검토</strong></div>
-            <div><span>다음 작업</span><strong>MA Baseline · 상시 0 규칙 · LightGBM ablation</strong></div>
-            <div><span>E1-L Custom Macro NRMSE</span><strong>0.259569 · 계산 기준 주의</strong></div>
+            <div><span>다음 작업</span><strong>LightGBM Calendar/Lag/Rolling ablation</strong></div>
+            <div><span>E1-L Custom Macro NRMSE</span><strong>0.255497 · 계산 기준 주의</strong></div>
           </div>
         </div>
         <div className="metric-strip">
@@ -64,7 +64,7 @@ export default function Home() {
           </section>
 
           <section className="lab-section roadmap-section" id="roadmap" aria-labelledby="roadmap-title">
-            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>E0 AutoML과 E1 LightGBM 결과를 기준으로 공식 Baseline, 상시 0 규칙 및 Feature ablation을 검증한 뒤 Validation 후보 하나를 선정합니다.</p></header>
+            <header className="section-head"><span>실험 로드맵</span><h2 id="roadmap-title">현재 실험 진행 계획</h2><p>E0 AutoML, 공식 이동평균 Baseline과 E1 LightGBM 상시 0 정책 평가를 완료했습니다. 다음으로 Feature ablation을 검증한 뒤 Validation 후보 하나를 선정합니다.</p></header>
             <ExperimentTabs />
           </section>
 
@@ -91,8 +91,9 @@ export default function Home() {
           </section>
 
           <section className="lab-section" id="baseline" aria-labelledby="baseline-title">
-            <header className="section-head"><span>Baseline · 다음 작업</span><h2 id="baseline-title">이동평균 Baseline 평가</h2><p>복잡한 모델의 성능을 판단하기 전에 MA(7), MA(14), MA(30)을 동일한 Validation 구간에서 평가합니다.</p></header>
-            <div className="baseline-row"><div><span>MA</span><strong>07</strong><small>최근 7일 평균</small></div><div><span>MA</span><strong>14</strong><small>최근 14일 평균</small></div><div><span>MA</span><strong>30</strong><small>최근 30일 평균</small></div><p>현재 상태: 평가 예정<br /><b>검증 방식: 고정 Forecast Origin 및 90일 재귀 예측</b></p></div>
+            <header className="section-head"><span>Baseline · 완료</span><h2 id="baseline-title">이동평균 Baseline 평가 결과</h2><p>MA(7), MA(14), MA(30)을 Validation 90일 fixed-origin recursive 방식으로 평가했습니다. 실제 Validation Target은 이력에 넣지 않았으며 Train에서 항상 0인 38개 시계열은 0으로 예측했습니다.</p></header>
+            <div className="table-wrap baseline-table"><table><thead><tr><th>모델</th><th>MAE</th><th>RMSE</th><th>R²</th><th>Macro NRMSE</th><th>판단</th></tr></thead><tbody><tr><td>MA(7)</td><td>1.401764</td><td>2.250167</td><td>0.579921</td><td>0.271146</td><td>기준선</td></tr><tr><td>MA(14)</td><td>1.328307</td><td>2.150143</td><td>0.616438</td><td>0.260025</td><td>기준선</td></tr><tr className="current"><td><b>MA(30)</b></td><td>1.293393</td><td>2.100677</td><td>0.633883</td><td>0.254418</td><td><b>최강 MA 기준선</b></td></tr></tbody></table></div>
+            <div className="baseline-conclusion"><span>해석 및 결정</span><p>Window가 길어질수록 네 지표가 모두 개선됐습니다. MA(30)을 공식 이동평균 기준선으로 사용하며, E1 LightGBM 상시 0 정책은 MA(30) 대비 MAE 약 6.0%, RMSE 약 2.68% 개선했습니다.</p></div>
           </section>
 
           <section className="lab-section" id="automl" aria-labelledby="automl-title">
@@ -108,11 +109,11 @@ export default function Home() {
           <section className="lab-section model-plan" id="lightgbm" aria-labelledby="lgbm-title">
             <header className="section-head"><span>LightGBM · 완료 · 후보 검토</span><h2 id="lgbm-title">E1 LightGBM Lag/Rolling v2 결과</h2><p>누수 방지 Lag/Rolling Feature를 사용한 LightGBM을 90일 고정 Forecast Origin 방식으로 평가했습니다. Test는 사용하지 않았고 모델 등록·배포도 진행하지 않았습니다.</p><i className="planned done">완료</i></header>
             <div className="run-summary"><div><span>Azure Job ID</span><strong>tough_ship_2n7nk8qrwz</strong></div><div><span>Train</span><strong>stockit-demand-e0-train:3 · 8,497,732행</strong></div><div><span>Validation</span><strong>stockit-demand-e0-validation:2 · 834,930행</strong></div><div><span>시계열</span><strong>9,277개</strong></div></div>
-            <div className="table-wrap lgbm-comparison"><table><thead><tr><th>Validation 지표</th><th>E0 VotingEnsemble</th><th>E1-L LightGBM v2</th><th>변화</th></tr></thead><tbody><tr><td>MAE</td><td>1.3287</td><td><b>1.219937</b></td><td className="improved">8.19% 개선</td></tr><tr><td>RMSE</td><td>2.0933</td><td><b>2.045311</b></td><td className="improved">2.29% 개선</td></tr><tr><td>R²</td><td>0.63569</td><td><b>0.652927</b></td><td className="improved">+0.01724</td></tr><tr><td>Macro NRMSE</td><td>0.24892</td><td>0.259569*</td><td className="declined">4.28% 악화</td></tr></tbody></table></div>
-            <div className="metric-caution"><b>* 지표 비교 주의</b><p>E1-L Macro NRMSE는 상시 0 시계열에 단위 분모를 사용하는 custom evaluator 결과입니다. Azure AutoML E0 NRMSE와 계산 정의가 완전히 동일하지 않으므로 직접적인 최종 우열 판단에는 사용하지 않습니다.</p></div>
+            <div className="table-wrap lgbm-comparison"><table><thead><tr><th>Validation 지표</th><th>E0 VotingEnsemble</th><th>E1-L 상시 0 정책</th><th>E0 대비 변화</th></tr></thead><tbody><tr><td>MAE</td><td>1.328700</td><td><b>1.215846</b></td><td className="improved">8.49% 개선</td></tr><tr><td>RMSE</td><td>2.093300</td><td><b>2.044311</b></td><td className="improved">2.34% 개선</td></tr><tr><td>R²</td><td>0.635690</td><td><b>0.653267</b></td><td className="improved">+0.017577</td></tr><tr><td>Macro NRMSE</td><td>0.248920</td><td>0.255497*</td><td>계산 정의 상이</td></tr></tbody></table></div>
+            <div className="metric-caution"><b>* 지표 비교 주의</b><p>E0 NRMSE 0.248920은 Azure AutoML 계산이고 E1-L 0.255497은 constant-range 시계열에 unit denominator를 사용하는 custom evaluator 결과입니다. 완전히 동일한 구현이 아니므로 방향성 참고로만 사용합니다.</p></div>
             <div className="lgbm-detail-grid">
               <article className="feature-importance"><h3>Feature importance · gain 기준</h3><div><span>rolling_mean_28</span><i><b style={{ width: "77.67%" }} /></i><strong>77.67%</strong></div><div><span>rolling_mean_14</span><i><b style={{ width: "7.79%" }} /></i><strong>7.79%</strong></div><div><span>rolling_std_28</span><i><b style={{ width: "4.66%" }} /></i><strong>4.66%</strong></div><div><span>day_of_week</span><i><b style={{ width: "2.66%" }} /></i><strong>2.66%</strong></div><div><span>lag_56</span><i><b style={{ width: "2.25%" }} /></i><strong>2.25%</strong></div></article>
-              <article className="zero-rule"><span>상시 0 보정 참고 결과</span><h3>Train 기준 38개 시계열을 0으로 고정</h3><dl><div><dt>MAE</dt><dd>1.215846</dd></div><div><dt>Macro NRMSE</dt><dd>0.255497</dd></div></dl><p>운영 규칙으로 확정되지 않은 참고 결과입니다. 공식 Baseline과 ablation 전에 적용 여부를 결정합니다.</p></article>
+              <article className="zero-rule"><span>상시 0 정책 · 적용</span><h3>Train 기준 38개 시계열의 예측을 0으로 고정</h3><dl><div><dt>MAE</dt><dd>1.215846</dd></div><div><dt>RMSE</dt><dd>2.044311</dd></div><div><dt>R²</dt><dd>0.653267</dd></div><div><dt>Macro NRMSE</dt><dd>0.255497</dd></div></dl><p>이 정책은 이동평균 Baseline과 E1 LightGBM에 동일하게 적용했습니다.</p></article>
             </div>
             <div className="leakage-note"><span>누수 방지 검증</span><p>Validation 90일을 날짜 순서로 예측하며 실제 Validation Target을 이력에 넣지 않습니다. 이전 날짜의 예측값만 다음 날짜 Lag/Rolling Feature에 재귀 입력했습니다.</p></div>
           </section>
@@ -124,8 +125,8 @@ export default function Home() {
 
           <section className="lab-section" id="models" aria-labelledby="models-title">
             <header className="section-head"><span>모델 비교</span><h2 id="models-title">모델 성능 비교</h2></header>
-            <div className="table-wrap"><table><thead><tr><th>MODEL</th><th>상태</th><th>MAE</th><th>RMSE</th><th>R²</th><th>Macro NRMSE ↓</th></tr></thead><tbody><tr className="current"><td>E0 · VotingEnsemble</td><td><b>기준 모델</b></td><td>1.3287</td><td>2.0933</td><td>0.63569</td><td>0.24892</td></tr><tr><td>E1-C · Calendar AutoML</td><td>후보 제외</td><td>1.3287</td><td>2.0933</td><td>0.63569</td><td>0.24892</td></tr><tr className="review"><td>E1-L · LightGBM Lag/Rolling v2</td><td><b>후보 검토</b></td><td>1.219937</td><td>2.045311</td><td>0.652927</td><td>0.259569*</td></tr><tr><td>B0 · MA(7/14/30)</td><td>다음 작업</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>A1 · LightGBM ablation</td><td>예정</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>XGBoost</td><td>대기</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
-            <div className="evaluation"><h3>평가 기준</h3><ul><li><b>행 단위 지표</b> MAE, RMSE, R²</li><li><b>시계열 균형 지표</b> Macro NRMSE</li><li>지표 계산 정의 일치 여부</li><li>항상 0인 38개 시계열 성능</li><li>음수 예측 발생률</li><li>D+7, D+14, D+30, D+60, D+90 누적 오차</li></ul><p>* E1-L Custom Macro NRMSE는 E0 AutoML NRMSE와 계산 정의가 완전히 같지 않아 참고 비교로만 사용합니다.</p></div>
+            <div className="table-wrap"><table><thead><tr><th>MODEL</th><th>상태</th><th>MAE</th><th>RMSE</th><th>R²</th><th>Macro NRMSE ↓</th></tr></thead><tbody><tr className="current"><td>E0 · VotingEnsemble</td><td><b>기준 모델</b></td><td>1.328700</td><td>2.093300</td><td>0.635690</td><td>0.248920*</td></tr><tr><td>E1-C · Calendar AutoML</td><td>후보 제외</td><td>1.328700</td><td>2.093300</td><td>0.635690</td><td>0.248920*</td></tr><tr><td>B0 · MA(7)</td><td>평가 완료</td><td>1.401764</td><td>2.250167</td><td>0.579921</td><td>0.271146</td></tr><tr><td>B0 · MA(14)</td><td>평가 완료</td><td>1.328307</td><td>2.150143</td><td>0.616438</td><td>0.260025</td></tr><tr><td>B0 · MA(30)</td><td>최강 MA 기준선</td><td>1.293393</td><td>2.100677</td><td>0.633883</td><td>0.254418</td></tr><tr className="review"><td>E1-L · LightGBM 상시 0 정책</td><td><b>후보 검토</b></td><td>1.215846</td><td>2.044311</td><td>0.653267</td><td>0.255497*</td></tr><tr><td>A1 · LightGBM ablation</td><td>다음 작업</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>XGBoost</td><td>대기</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
+            <div className="evaluation"><h3>평가 기준</h3><ul><li><b>행 단위 지표</b> MAE, RMSE, R²</li><li><b>시계열 균형 지표</b> Macro NRMSE</li><li>지표 계산 정의 일치 여부</li><li>항상 0인 38개 시계열 성능</li><li>음수 예측 발생률</li><li>D+7, D+14, D+30, D+60, D+90 누적 오차</li></ul><p>* E0는 Azure AutoML 계산, E1-L은 constant-range 시계열에 unit denominator를 사용하는 custom 계산입니다. 아직 Validation 후보는 확정하지 않았습니다.</p></div>
           </section>
 
           <section className="lab-section" id="test" aria-labelledby="test-title">
